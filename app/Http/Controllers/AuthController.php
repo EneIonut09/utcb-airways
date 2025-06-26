@@ -18,7 +18,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|min:2|max:255',
-            'email' => 'required|email:rfc,dns|max:255|unique:users,email',
+            'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
             'password_confirmation' => 'required|same:password',
         ], [
@@ -80,6 +80,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/')->with('success', 'V-ați delogat cu succes!');
+        return redirect()->route('home')->with('success', 'V-ați delogat cu succes!');
     }
 }

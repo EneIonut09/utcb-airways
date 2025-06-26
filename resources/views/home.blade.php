@@ -9,6 +9,12 @@
     @vite(['resources/css/home.css'])
 </head>
 <body>
+    @if(session('success'))
+        <div class="success-message" id="successMessage">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <header class="header">
         <div class="header-content">
             <a href="/home" class="logo">
@@ -22,7 +28,33 @@
                     <li><a href="#">Găsește rezervarea</a></li>
                     <li><a href="#">Check-in</a></li>
                     <li><a href="#">Contact</a></li>
-                    <li><a href="/register">Cont</a></li>
+
+                    @auth
+                        {{-- Verifică dacă utilizatorul este admin --}}
+                        @if(Auth::user()->role === 'admin')
+                            <li><a href="/admin/dashboard" class="admin-link">Admin Panel</a></li>
+                        @endif
+                        
+                        <li class="user-dropdown">
+                            <a href="#" class="user-name" onclick="toggleDropdown(event)">
+                                {{ Auth::user()->name }}
+                                <span class="dropdown-arrow">▼</span>
+                            </a>
+                            <div class="dropdown-menu" id="userDropdown">
+                                <a href="#" class="dropdown-item">
+                                    <i class=""></i> Rezervările mele
+                                </a>
+                                <form method="POST" action="/logout" style="margin: 0;" onsubmit="return confirmLogout()">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item logout-btn">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    @else
+                        <li><a href="/register">Cont</a></li>
+                    @endauth
                 </ul>
             </nav>
         </div>
@@ -90,10 +122,20 @@
                 </div>
 
                 <div class="promo-content">
-                    <h1 class="promo-title">Descoperă următoarea aventură!</h1>
+                    <h1 class="promo-title">
+                        @auth
+                            Bun venit înapoi, {{ Auth::user()->name }}!
+                        @else
+                            Descoperă următoarea aventură!
+                        @endauth
+                    </h1>
                     <p class="promo-subtitle">
-                        Alege UTCB Airways și vei avea parte de experiențe premium la prețuri imbatabile. 
-                        Călătoria ta începe aici.
+                        @auth
+                            Unde vrei să călătorești astăzi? Explorează ofertele noastre speciale și rezervă următoarea ta aventură.
+                        @else
+                            Alege UTCB Airways și vei avea parte de experiențe premium la prețuri imbatabile. 
+                            Călătoria ta începe aici.
+                        @endauth
                     </p>
                     <a href="/display-model" class="cta-button">
                         Explorează destinații
@@ -173,5 +215,48 @@
             </div>
         </section>
     </main>
+
+    <script>
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('userDropdown');
+            const arrow = document.querySelector('.dropdown-arrow');
+            
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                dropdown.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const userDropdown = document.querySelector('.user-dropdown');
+            const arrow = document.querySelector('.dropdown-arrow');
+            
+            if (userDropdown && !userDropdown.contains(event.target)) {
+                dropdown.style.display = 'none';
+                if (arrow) arrow.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            setTimeout(() => {
+                successMessage.style.opacity = '0';
+                setTimeout(() => {
+                    successMessage.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        const departureDateInput = document.getElementById('departure_date');
+        if (departureDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            departureDateInput.min = today;
+        }
+    </script>
 </body>
 </html>

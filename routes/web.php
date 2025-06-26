@@ -3,10 +3,11 @@
 use App\Http\Controllers\FlightController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
 Route::get('/', [FlightController::class, 'welcome']);
 
-Route::get('/home', [FlightController::class, 'home']);
+Route::get('/home', [FlightController::class, 'home'])->name('home');
 
 Route::get('/insert-model', [FlightController::class, 'insertModel']);
 
@@ -22,3 +23,11 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    Route::get('/flights', [AdminController::class, 'flights'])->name('admin.flights');
+    Route::delete('/flights/{id}', [AdminController::class, 'deleteFlight'])->name('admin.flights.delete');
+});
