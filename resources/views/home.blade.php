@@ -22,7 +22,7 @@
                     <li><a href="#">Găsește rezervarea</a></li>
                     <li><a href="#">Check-in</a></li>
                     <li><a href="#">Contact</a></li>
-                    <li><a href="#">Cont</a></li>
+                    <li><a href="/register">Cont</a></li>
                 </ul>
             </nav>
         </div>
