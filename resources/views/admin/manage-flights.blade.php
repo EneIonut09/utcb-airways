@@ -102,7 +102,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <strong style="color: #4caf50;">{{ number_format($flight->price, 2) }} €</strong>
+                                    <strong style="color: #4caf50;">{{ number_format($flight->price, 2) }} $</strong>
                                 </td>
                                 <td>
                                     <span class="badge {{ $flight->available_seats > 50 ? 'badge-success' : ($flight->available_seats > 10 ? 'badge-warning' : 'badge-danger') }}">

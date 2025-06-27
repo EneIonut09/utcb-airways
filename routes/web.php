@@ -4,6 +4,7 @@ use App\Http\Controllers\FlightController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ReservationController;
 
 Route::get('/', [FlightController::class, 'welcome']);
 
@@ -30,4 +31,9 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::get('/flights', [AdminController::class, 'flights'])->name('admin.flights');
     Route::delete('/flights/{id}', [AdminController::class, 'deleteFlight'])->name('admin.flights.delete');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/my-reservations', [ReservationController::class, 'myReservations'])->name('my-reservations');
+    Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('reservations.show');
 });

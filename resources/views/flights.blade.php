@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <a href="/home" class="back-link">Înapoi</a>
-        <a href="/insert-model" class="insert-link">Refresh</a>
+        
         
         <h1>Zboruri disponibile</h1>    
         

@@ -17,7 +17,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // Asigură-te că role este aici
+        'is_admin',
     ];
 
     /**
@@ -36,22 +36,17 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 
-    /**
-     * Check if user is admin
-     */
-    public function isAdmin(): bool
+    public function isAdmin()
     {
-        return $this->role === 'admin';
+        return $this->is_admin;
     }
-
-    /**
-     * Check if user is regular user
-     */
-    public function isUser(): bool
+    
+    public function reservations()
     {
-        return $this->role === 'user';
+        return $this->hasMany(Reservation::class);
     }
 }

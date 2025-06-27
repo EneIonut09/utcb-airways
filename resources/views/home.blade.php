@@ -41,7 +41,7 @@
                                 <span class="dropdown-arrow">▼</span>
                             </a>
                             <div class="dropdown-menu" id="userDropdown">
-                                <a href="#" class="dropdown-item">
+                                <a href="{{ route('my-reservations') }}" class="dropdown-item">
                                     <i class=""></i> Rezervările mele
                                 </a>
                                 <form method="POST" action="/logout" style="margin: 0;" onsubmit="return confirmLogout()">
