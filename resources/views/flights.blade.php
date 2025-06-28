@@ -11,8 +11,19 @@
     <div class="container">
         <a href="/home" class="back-link">Înapoi</a>
         
-        
         <h1>Zboruri disponibile</h1>    
+        
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
         
         @if(count($flights) == 0)
             <p style="text-align: center; font-size: 1.2rem; color: #666;">
@@ -27,11 +38,11 @@
                     
                     <div class="details">
                         <div class="detail-item">
-                            <span class="detail-label">Orașul de plecare:</span><br>
+                            <span class="detail-label">Plecare:</span><br>
                             {{ \Carbon\Carbon::parse($flight->departure_time)->format('d/m/Y H:i') }}
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Destinația:</span><br>
+                            <span class="detail-label">Sosire:</span><br>
                             {{ \Carbon\Carbon::parse($flight->arrival_time)->format('d/m/Y H:i') }}
                         </div>
                         <div class="detail-item">
@@ -40,11 +51,31 @@
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Locuri disponibile:</span><br>
-                            {{ $flight->available_seats }}
+                            <span class="{{ $flight->available_seats > 0 ? 'seats-available' : 'seats-unavailable' }}">
+                                {{ $flight->available_seats }}
+                            </span>
                         </div>
                     </div>
                     
-                    <div class="price">${{ number_format($flight->price, 2) }}</div>
+                    <div class="flight-actions">
+                        <div class="price">${{ number_format($flight->price, 2) }}</div>
+                        
+                        @auth
+                            @if($flight->available_seats > 0)
+                                <a href="{{ route('reservations.create', $flight->id) }}" class="booking-button">
+                                    Rezervă acum
+                                </a>
+                            @else
+                                <span class="sold-out">
+                                    Complet ocupat
+                                </span>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" class="login-button">
+                                Loghează-te pentru rezervare
+                            </a>
+                        @endauth
+                    </div>
                 </div>
                 @endforeach
             </div>
