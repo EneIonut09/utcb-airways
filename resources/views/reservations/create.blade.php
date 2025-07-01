@@ -8,6 +8,27 @@
     @vite(['resources/css/booking.css'])    
 </head>
 <body>
+    @php
+        $passengerCount = (int) request('passenger_count', 1);
+        $maxPassengers = min(10, $flight->available_seats);
+        
+        $bookingClass = request('booking_class', 'economy');
+        $classMultipliers = [
+            'economy' => 1.0,
+            'business' => 2.0,
+            'first' => 3.5
+        ];
+        $classNames = [
+            'economy' => 'Economy (Standard)',
+            'business' => 'Business (+100%)',
+            'first' => 'First Class (+250%)'
+        ];
+        
+        $multiplier = $classMultipliers[$bookingClass] ?? 1.0;
+        $pricePerPassenger = $flight->price * $multiplier;
+        $totalPrice = $pricePerPassenger * $passengerCount;
+    @endphp
+
     <div class="container">
         <a href="/display-model" class="back-link">← Înapoi la zboruri</a>
 
@@ -54,57 +75,131 @@
             <form method="POST" action="{{ route('reservations.store') }}" id="bookingForm">
                 @csrf
                 <input type="hidden" name="flight_id" value="{{ $flight->id }}">
-                <input type="hidden" id="flight-price" value="{{ $flight->price }}">
 
+                <div class="section-title">Detalii rezervare</div>
+                
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="passenger_name">Numele pasagerului principal *</label>
-                        <input type="text" id="passenger_name" name="passenger_name" 
-                               value="{{ old('passenger_name', Auth::user()->name) }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="passenger_email">Email *</label>
-                        <input type="email" id="passenger_email" name="passenger_email" 
-                               value="{{ old('passenger_email', Auth::user()->email) }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="passenger_phone">Telefon *</label>
-                        <input type="tel" id="passenger_phone" name="passenger_phone" 
-                               value="{{ old('passenger_phone') }}" placeholder="Ex: +40712345678" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="number_of_passengers">Numărul de pasageri *</label>
-                        <select id="number_of_passengers" name="number_of_passengers" required onchange="updatePrice()">
-                            @for($i = 1; $i <= min(10, $flight->available_seats); $i++)
-                                <option value="{{ $i }}" {{ old('number_of_passengers', 1) == $i ? 'selected' : '' }}>
-                                    {{ $i }} {{ $i == 1 ? 'pasager' : 'pasageri' }}
-                                </option>
-                            @endfor
+                        <label for="booking_class">Clasa de zbor *</label>
+                        <select id="booking_class" name="booking_class" required onchange="this.form.submit()">
+                            <option value="economy" {{ $bookingClass == 'economy' ? 'selected' : '' }}>
+                                Economy (Standard)
+                            </option>
+                            <option value="business" {{ $bookingClass == 'business' ? 'selected' : '' }}>
+                                Business (+100%)
+                            </option>
+                            <option value="first" {{ $bookingClass == 'first' ? 'selected' : '' }}>
+                                First Class (+250%)
+                            </option>
                         </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="special_requests">Cerințe speciale (opțional)</label>
-                        <textarea id="special_requests" name="special_requests" rows="3" 
-                                  placeholder="Ex: Loc la fereastră, masă vegetariană, etc.">{{ old('special_requests') }}</textarea>
+                        <input type="hidden" name="passenger_count" value="{{ $passengerCount }}">
+                        @for($i = 0; $i < $passengerCount; $i++)
+                            @foreach(['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gender', 'passport_number', 'nationality', 'special_requests'] as $field)
+                                @if(request("passengers.{$i}.{$field}"))
+                                    <input type="hidden" name="passengers[{{ $i }}][{{ $field }}]" value="{{ request("passengers.{$i}.{$field}") }}">
+                                @endif
+                            @endforeach
+                        @endfor
                     </div>
                 </div>
 
+                <div class="section-title">Informații pasageri</div>
+                
+                <div class="passenger-actions">
+                    @if($passengerCount < $maxPassengers)
+                        <a href="{{ request()->fullUrlWithQuery(['passenger_count' => $passengerCount + 1]) }}" class="add-passenger">
+                            + Adaugă pasager ({{ $passengerCount + 1 }}/{{ $maxPassengers }})
+                        </a>
+                    @endif
+                    
+                    @if($passengerCount > 1)
+                        <a href="{{ request()->fullUrlWithQuery(['passenger_count' => $passengerCount - 1]) }}" class="remove-passenger">
+                            - Elimină pasager
+                        </a>
+                    @endif
+                </div>
+
+                @for($i = 0; $i < $passengerCount; $i++)
+                    <div class="passenger-section">
+                        <div class="passenger-header">
+                            <span class="passenger-title">
+                                Pasagerul {{ $i + 1 }} {{ $i == 0 ? '(Principal)' : '' }}
+                            </span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Prenume *</label>
+                                <input type="text" name="passengers[{{ $i }}][first_name]" 
+                                       value="{{ old("passengers.{$i}.first_name", $i == 0 ? (explode(' ', Auth::user()->name)[0] ?? '') : '') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nume *</label>
+                                <input type="text" name="passengers[{{ $i }}][last_name]" 
+                                       value="{{ old("passengers.{$i}.last_name", $i == 0 ? (explode(' ', Auth::user()->name)[1] ?? '') : '') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" name="passengers[{{ $i }}][email]" 
+                                       value="{{ old("passengers.{$i}.email", $i == 0 ? Auth::user()->email : '') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefon *</label>
+                                <input type="tel" name="passengers[{{ $i }}][phone]" 
+                                       value="{{ old("passengers.{$i}.phone") }}" placeholder="Ex: +40712345678" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Data nașterii</label>
+                                <input type="date" name="passengers[{{ $i }}][date_of_birth]" 
+                                       value="{{ old("passengers.{$i}.date_of_birth") }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Gen</label>
+                                <select name="passengers[{{ $i }}][gender]">
+                                    <option value="">Selectează</option>
+                                    <option value="male" {{ old("passengers.{$i}.gender") == 'male' ? 'selected' : '' }}>Masculin</option>
+                                    <option value="female" {{ old("passengers.{$i}.gender") == 'female' ? 'selected' : '' }}>Feminin</option>
+                                    <option value="other" {{ old("passengers.{$i}.gender") == 'other' ? 'selected' : '' }}>Altul</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Numărul pașaportului</label>
+                                <input type="text" name="passengers[{{ $i }}][passport_number]" 
+                                       value="{{ old("passengers.{$i}.passport_number") }}" placeholder="Ex: RO123456789">
+                            </div>
+                            <div class="form-group">
+                                <label>Naționalitatea</label>
+                                <input type="text" name="passengers[{{ $i }}][nationality]" 
+                                       value="{{ old("passengers.{$i}.nationality") }}" placeholder="Ex: Română">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Cerințe speciale</label>
+                                <textarea name="passengers[{{ $i }}][special_requests]" rows="2" 
+                                          placeholder="Ex: Loc la fereastră, masă vegetariană, etc.">{{ old("passengers.{$i}.special_requests") }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                @endfor
+
                 <div class="price-calculation">
                     <div class="price-row">
-                        <span>Preț per pasager:</span>
+                        <span>Preț de bază per pasager:</span>
                         <span>${{ number_format($flight->price, 2) }}</span>
                     </div>
                     <div class="price-row">
+                        <span>Clasa selectată:</span>
+                        <span>{{ $classNames[$bookingClass] }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Preț per pasager (cu clasa):</span>
+                        <span>${{ number_format($pricePerPassenger, 2) }}</span>
+                    </div>
+                    <div class="price-row">
                         <span>Numărul de pasageri:</span>
-                        <span id="passengers-display">1</span>
+                        <span>{{ $passengerCount }}</span>
                     </div>
                     <div class="price-row total-price">
                         <span>Total de plată:</span>
-                        <span id="total-price">${{ number_format($flight->price, 2) }}</span>
+                        <span>${{ number_format($totalPrice, 2) }}</span>
                     </div>
                 </div>
 
@@ -113,32 +208,5 @@
         </div>
     </div>
 
-    <script>
-        function updatePrice() {
-            const flightPriceInput = document.getElementById('flight-price');
-            const passengersSelect = document.getElementById('number_of_passengers');
-            
-            if (flightPriceInput && passengersSelect) {
-                const passengers = parseInt(passengersSelect.value);
-                const pricePerPerson = parseFloat(flightPriceInput.value);
-                const totalPrice = passengers * pricePerPerson;
-                
-                const passengersDisplay = document.getElementById('passengers-display');
-                const totalPriceDisplay = document.getElementById('total-price');
-                
-                if (passengersDisplay) {
-                    passengersDisplay.textContent = passengers;
-                }
-                
-                if (totalPriceDisplay) {
-                    totalPriceDisplay.textContent = '$' + totalPrice.toFixed(2);
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            updatePrice();
-        });
-    </script>
 </body>
 </html>
