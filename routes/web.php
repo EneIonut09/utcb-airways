@@ -36,6 +36,9 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/my-reservations', [ReservationController::class, 'myReservations'])->name('my-reservations');
     Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('reservations.show');
+    Route::get('/reservations/{id}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
+    Route::put('/reservations/{id}', [ReservationController::class, 'update'])->name('reservations.update');
+    Route::delete('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
 
     Route::get('/book-flight/{flight}', [ReservationController::class, 'create'])->name('reservations.create');
     Route::post('/book-flight', [ReservationController::class, 'store'])->name('reservations.store');

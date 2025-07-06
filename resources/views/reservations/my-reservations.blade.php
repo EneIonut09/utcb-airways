@@ -13,6 +13,18 @@
             <a href="/display-model" class="back-link">← Înapoi la zboruri</a>
         </div>
 
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
+
         @if($reservations->count() > 0)
             @foreach($reservations as $reservation)
                 <div class="reservation-card">
@@ -169,10 +181,9 @@
                         </div>
 
                         <div class="actions">
-                            <a href="#" class="btn btn-primary">Vezi detalii</a>
-                            @if($reservation->status === 'confirmed')
-                                <a href="#" class="btn btn-secondary">Modifică</a>
-                            @endif
+                            <a href="{{ route('reservations.show', $reservation->id) }}" class="btn btn-primary">
+                                Vezi detalii
+                            </a>
                         </div>
                     </div>
                 </div>
