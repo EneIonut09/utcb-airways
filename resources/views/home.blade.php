@@ -22,12 +22,11 @@
             </a>
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="#">Zboruri</a></li>
-                    <li><a href="#">Hoteluri</a></li>
-                    <li><a href="#">Mașini</a></li>
-                    <li><a href="#">Găsește rezervarea</a></li>
-                    <li><a href="#">Check-in</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="display-model">Zboruri</a></li>
+                    <li><a href="coming-soon">Hoteluri</a></li>
+                    <li><a href="coming-soon">Mașini</a></li>
+                    <li><a href="coming-soon">Check-in</a></li>
+                    <li><a href="coming-soon">Contact</a></li>
 
                     @auth
                         {{-- Verifică dacă utilizatorul este admin --}}

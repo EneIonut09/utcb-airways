@@ -65,4 +65,9 @@ class FlightController extends Controller
     
     return redirect('/formular')->with('success', 'Zbor adăugat cu succes!');
     }
+
+    public function comingSoon() {
+    return view('coming-soon');
+}
+
 }

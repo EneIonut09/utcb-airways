@@ -10,6 +10,8 @@ Route::get('/', [FlightController::class, 'welcome']);
 
 Route::get('/home', [FlightController::class, 'home'])->name('home');
 
+Route::get('/coming-soon', [FlightController::class, 'comingSoon'])->name('coming-soon');
+
 Route::get('/insert-model', [FlightController::class, 'insertModel']);
 
 Route::get('display-model', [FlightController::class, 'displayModel']);
